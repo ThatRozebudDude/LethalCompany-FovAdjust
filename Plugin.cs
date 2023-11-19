@@ -76,8 +76,6 @@ namespace FovAdjust
         [HarmonyPostfix]
         static void Awake_Postfix(PlayerControllerB __instance) {
 
-            //Makes visor invisible by setting the scale to 0.
-            FovAdjustBase.log.LogMessage(__instance.localVisor.localScale);
             calculateVisorStuff();
             __instance.localVisor.localScale = visorScale;
 
