@@ -96,29 +96,29 @@ namespace FovAdjust
             //DEBUG STUFF DO NOT WORRY!!!!!!
             if (FovAdjustBase.inDebugMode) {
                 if (Keyboard.current.minusKey.wasPressedThisFrame) {
-                    visorScale.x -= 0.01f / 20;
+                    visorScale.x -= 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
                 else if (Keyboard.current.equalsKey.wasPressedThisFrame) {
-                    visorScale.x += 0.01f / 20;
+                    visorScale.x += 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
 
                 if (Keyboard.current.leftBracketKey.wasPressedThisFrame) {
-                    visorScale.y -= 0.01f / 20;
+                    visorScale.y -= 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
                 else if (Keyboard.current.rightBracketKey.wasPressedThisFrame) {
-                    visorScale.y += 0.01f / 20;
+                    visorScale.y += 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
 
                 if (Keyboard.current.semicolonKey.wasPressedThisFrame) {
-                    visorScale.z -= 0.01f / 20;
+                    visorScale.z -= 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
                 else if (Keyboard.current.quoteKey.wasPressedThisFrame) {
-                    visorScale.z += 0.01f / 20;
+                    visorScale.z += 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
             }
