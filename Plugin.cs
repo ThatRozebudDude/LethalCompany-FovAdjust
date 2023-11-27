@@ -19,7 +19,7 @@ namespace FovAdjust
 
         private const string modGUID = "Rozebud.FovAdjust";
         private const string modName = "FOV Adjust";
-        private const string modVer  = "1.1.0";
+        private const string modVer  = "1.1.1";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -45,6 +45,8 @@ namespace FovAdjust
             PlayerControllerBPatches.hideVisor = configHideVisor.Value;
 
             log.LogInfo("Configs DONE!");
+
+            PlayerControllerBPatches.calculateVisorStuff();
 
             harmony.PatchAll(typeof(PlayerControllerBPatches));
             harmony.PatchAll(typeof(HUDManagerPatches));
@@ -76,7 +78,8 @@ namespace FovAdjust
         [HarmonyPostfix]
         static void Awake_Postfix(PlayerControllerB __instance) {
 
-            calculateVisorStuff();
+            if (filterPlayerControllers(__instance)) { return; }
+
             __instance.localVisor.localScale = visorScale;
 
         }
@@ -84,6 +87,8 @@ namespace FovAdjust
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
         [HarmonyPrefix]
         static void Update_Prefix(PlayerControllerB __instance) {
+
+            if (filterPlayerControllers(__instance)) { return; }
 
             //Get the camera FOV before the Update function modifies it so I can do my own lerp later.
             prefixCamFov = __instance.gameplayCamera.fieldOfView;
@@ -128,6 +133,8 @@ namespace FovAdjust
         [HarmonyPostfix]
         static void Update_Postfix(PlayerControllerB __instance) {
 
+            if (filterPlayerControllers(__instance)) { return; }
+
             //Copies what the Update function does to handle the FOV but it uses the custom values for normal gameplay.
             float finalTargetFov = newTargetFovBase;
             if (__instance.inTerminalMenu) { finalTargetFov = 60f; }
@@ -142,10 +149,12 @@ namespace FovAdjust
 
         [HarmonyPatch(typeof(PlayerControllerB), "LateUpdate")]
         [HarmonyPostfix]
-        static void lateUpdatePostfix(PlayerControllerB __instance) {
+        static void LateUpdate_Postfix(PlayerControllerB __instance) {
+
+            if (filterPlayerControllers(__instance)) { return; }
 
             if (newTargetFovBase > 66 || FovAdjustBase.inDebugMode) {
-                __instance.localVisor.position = __instance.localVisor.position + (__instance.localVisor.rotation * new Vector3(0f, 0f, -0.003f));
+                __instance.localVisor.position = __instance.localVisor.position + (__instance.localVisor.rotation * new Vector3(0f, 0f, -0.06f));
             }
 
         }
@@ -155,20 +164,17 @@ namespace FovAdjust
         public static void calculateVisorStuff() {
             if (hideVisor) { visorScale = new Vector3(0f, 0f, 0f); }
             else {
-                if (FovAdjustBase.inDebugMode) {
+                if (newTargetFovBase > 66 || FovAdjustBase.inDebugMode) {
                     float visorLerpAmount = (newTargetFovBase - 66f) / (visorScaleTopRefFOV - 66f);
                     visorLerpAmount = Mathf.Lerp(visorLerpAmount, easeOutSine(visorLerpAmount), linToSinLerp);
                     visorScale = Vector3.LerpUnclamped(visorScaleBottom, visorScaleTop, visorLerpAmount);
                 }
-                else {
-                    if (newTargetFovBase > 66) {
-                        float visorLerpAmount = (newTargetFovBase - 66f) / (visorScaleTopRefFOV - 66f);
-                        visorLerpAmount = Mathf.Lerp(visorLerpAmount, easeOutSine(visorLerpAmount), linToSinLerp);
-                        visorScale = Vector3.LerpUnclamped(visorScaleBottom, visorScaleTop, visorLerpAmount);
-                    }
-                    else { visorScale = new Vector3(0.36f, 0.49f, 0.49f); }
-                }
+                else { visorScale = new Vector3(0.36f, 0.49f, 0.49f); }
             }
+        }
+
+        static bool filterPlayerControllers(PlayerControllerB player) {
+            return (!player.IsOwner || !player.isPlayerControlled || ((player.IsServer && !player.isHostPlayerObject)) && !player.isTestingPlayer);
         }
 
     }
