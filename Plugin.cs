@@ -15,11 +15,12 @@ using UnityEngine.EventSystems;
 namespace FovAdjust
 {
     [BepInPlugin(modGUID, modName, modVer)]
-    public class FovAdjustBase : BaseUnityPlugin {
+    public class FovAdjustBase : BaseUnityPlugin
+    {
 
         private const string modGUID = "Rozebud.FovAdjust";
         private const string modName = "FOV Adjust";
-        private const string modVer  = "1.1.1";
+        private const string modVer = "1.1.1";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -31,9 +32,10 @@ namespace FovAdjust
 
         public static bool inDebugMode = false;
 
-        void Awake() {
+        void Awake()
+        {
 
-            if(Instance == null) { Instance = this; }
+            if (Instance == null) { Instance = this; }
             log = BepInEx.Logging.Logger.CreateLogSource(modGUID);
 
             log.LogInfo("Starting.");
@@ -60,7 +62,8 @@ namespace FovAdjust
 
 
     //Patches for PlayerControllerB.
-    public class PlayerControllerBPatches {
+    public class PlayerControllerBPatches
+    {
 
         public static float newTargetFovBase = 66f;
         static float prefixCamFov = 0f;
@@ -76,7 +79,8 @@ namespace FovAdjust
 
         [HarmonyPatch(typeof(PlayerControllerB), "Awake")]
         [HarmonyPostfix]
-        static void Awake_Postfix(PlayerControllerB __instance) {
+        static void Awake_Postfix(PlayerControllerB __instance)
+        {
 
             if (filterPlayerControllers(__instance)) { return; }
 
@@ -86,7 +90,8 @@ namespace FovAdjust
 
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
         [HarmonyPrefix]
-        static void Update_Prefix(PlayerControllerB __instance) {
+        static void Update_Prefix(PlayerControllerB __instance)
+        {
 
             if (filterPlayerControllers(__instance)) { return; }
 
@@ -94,36 +99,44 @@ namespace FovAdjust
             prefixCamFov = __instance.gameplayCamera.fieldOfView;
 
             //DEBUG STUFF DO NOT WORRY!!!!!!
-            if (FovAdjustBase.inDebugMode) {
-                if (Keyboard.current.minusKey.wasPressedThisFrame) {
+            if (FovAdjustBase.inDebugMode)
+            {
+                if (Keyboard.current.minusKey.wasPressedThisFrame)
+                {
                     visorScale.x -= 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
-                else if (Keyboard.current.equalsKey.wasPressedThisFrame) {
+                else if (Keyboard.current.equalsKey.wasPressedThisFrame)
+                {
                     visorScale.x += 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
 
-                if (Keyboard.current.leftBracketKey.wasPressedThisFrame) {
+                if (Keyboard.current.leftBracketKey.wasPressedThisFrame)
+                {
                     visorScale.y -= 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
-                else if (Keyboard.current.rightBracketKey.wasPressedThisFrame) {
+                else if (Keyboard.current.rightBracketKey.wasPressedThisFrame)
+                {
                     visorScale.y += 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
 
-                if (Keyboard.current.semicolonKey.wasPressedThisFrame) {
+                if (Keyboard.current.semicolonKey.wasPressedThisFrame)
+                {
                     visorScale.z -= 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
-                else if (Keyboard.current.quoteKey.wasPressedThisFrame) {
+                else if (Keyboard.current.quoteKey.wasPressedThisFrame)
+                {
                     visorScale.z += 0.01f;
                     FovAdjustBase.log.LogMessage(visorScale);
                 }
             }
 
-            if (__instance.localVisor.localScale != visorScale) {
+            if (__instance.localVisor.localScale != visorScale)
+            {
                 __instance.localVisor.localScale = visorScale;
             }
 
@@ -131,7 +144,8 @@ namespace FovAdjust
 
         [HarmonyPatch(typeof(PlayerControllerB), "Update")]
         [HarmonyPostfix]
-        static void Update_Postfix(PlayerControllerB __instance) {
+        static void Update_Postfix(PlayerControllerB __instance)
+        {
 
             if (filterPlayerControllers(__instance)) { return; }
 
@@ -139,7 +153,8 @@ namespace FovAdjust
             float finalTargetFov = newTargetFovBase;
             if (__instance.inTerminalMenu) { finalTargetFov = 60f; }
             else if (__instance.IsInspectingItem) { finalTargetFov = 46f; }
-            else {
+            else
+            {
                 if (__instance.isSprinting) { finalTargetFov *= 1.03f; }
             }
 
@@ -149,11 +164,13 @@ namespace FovAdjust
 
         [HarmonyPatch(typeof(PlayerControllerB), "LateUpdate")]
         [HarmonyPostfix]
-        static void LateUpdate_Postfix(PlayerControllerB __instance) {
+        static void LateUpdate_Postfix(PlayerControllerB __instance)
+        {
 
             if (filterPlayerControllers(__instance)) { return; }
 
-            if (newTargetFovBase > 66 || FovAdjustBase.inDebugMode) {
+            if (newTargetFovBase > 66 || FovAdjustBase.inDebugMode)
+            {
                 __instance.localVisor.position = __instance.localVisor.position + (__instance.localVisor.rotation * new Vector3(0f, 0f, -0.06f));
             }
 
@@ -161,10 +178,13 @@ namespace FovAdjust
 
         static float easeOutSine(float x) { return Mathf.Sin((x * Mathf.PI) / 2); }
 
-        public static void calculateVisorStuff() {
+        public static void calculateVisorStuff()
+        {
             if (hideVisor) { visorScale = new Vector3(0f, 0f, 0f); }
-            else {
-                if (newTargetFovBase > 66 || FovAdjustBase.inDebugMode) {
+            else
+            {
+                if (newTargetFovBase > 66 || FovAdjustBase.inDebugMode)
+                {
                     float visorLerpAmount = (newTargetFovBase - 66f) / (visorScaleTopRefFOV - 66f);
                     visorLerpAmount = Mathf.Lerp(visorLerpAmount, easeOutSine(visorLerpAmount), linToSinLerp);
                     visorScale = Vector3.LerpUnclamped(visorScaleBottom, visorScaleTop, visorLerpAmount);
@@ -173,7 +193,8 @@ namespace FovAdjust
             }
         }
 
-        static bool filterPlayerControllers(PlayerControllerB player) {
+        static bool filterPlayerControllers(PlayerControllerB player)
+        {
             return (!player.IsOwner || !player.isPlayerControlled || ((player.IsServer && !player.isHostPlayerObject)) && !player.isTestingPlayer);
         }
 
@@ -182,22 +203,27 @@ namespace FovAdjust
 
 
     //Patches for the HUDManager. For the chat commands.
-    public class HUDManagerPatches {
+    public class HUDManagerPatches
+    {
 
         [HarmonyPatch(typeof(HUDManager), "SubmitChat_performed")]
         [HarmonyPrefix]
-        public static bool SubmitChat_performed_Prefix(HUDManager __instance) {
+        public static bool SubmitChat_performed_Prefix(HUDManager __instance)
+        {
 
             string command = __instance.chatTextField.text;
 
             //Set fov with chat command.
-            if (command.StartsWith("/fov")) {
+            if (command.StartsWith("/fov"))
+            {
 
                 string[] args = command.Split(' ');
-                if (args.Length > 1) {
+                if (args.Length > 1)
+                {
 
-                    if (float.TryParse(args[1], out float fovValue)) {
-
+                    if (float.TryParse(args[1], out float fovValue))
+                    {
+                        if (float.IsNaN(fovValue)) return false;
                         fovValue = Mathf.Clamp(fovValue, 66, 130);
                         PlayerControllerBPatches.newTargetFovBase = fovValue;
                         if (!FovAdjustBase.inDebugMode) { PlayerControllerBPatches.calculateVisorStuff(); }
@@ -206,7 +232,8 @@ namespace FovAdjust
             }
 
             //Toggle visor with chat command.
-            else if (command.StartsWith("/toggleVisor")) {
+            else if (command.StartsWith("/toggleVisor"))
+            {
 
                 PlayerControllerBPatches.hideVisor = !PlayerControllerBPatches.hideVisor;
                 PlayerControllerBPatches.calculateVisorStuff();
@@ -215,23 +242,28 @@ namespace FovAdjust
 
             //The rest of this is debug stuff to help me get visor scaling stuff.
             else if (command.StartsWith("/recalcVisor") && FovAdjustBase.inDebugMode) { PlayerControllerBPatches.calculateVisorStuff(); }
-            else if (command.StartsWith("/setScaleBottom") && FovAdjustBase.inDebugMode) {
+            else if (command.StartsWith("/setScaleBottom") && FovAdjustBase.inDebugMode)
+            {
                 string[] args = command.Split(' ');
                 PlayerControllerBPatches.visorScaleBottom = new Vector3(float.Parse(args[1]), float.Parse(args[2]), float.Parse(args[3]));
             }
-            else if (command.StartsWith("/setScaleTop") && FovAdjustBase.inDebugMode) {
+            else if (command.StartsWith("/setScaleTop") && FovAdjustBase.inDebugMode)
+            {
                 string[] args = command.Split(' ');
                 PlayerControllerBPatches.visorScaleTop = new Vector3(float.Parse(args[1]), float.Parse(args[2]), float.Parse(args[3]));
             }
-            else if (command.StartsWith("/setSinAmount") && FovAdjustBase.inDebugMode) {
+            else if (command.StartsWith("/setSinAmount") && FovAdjustBase.inDebugMode)
+            {
                 string[] args = command.Split(' ');
                 PlayerControllerBPatches.linToSinLerp = float.Parse(args[1]);
             }
-            else if (command.StartsWith("/setTopRef") && FovAdjustBase.inDebugMode) {
+            else if (command.StartsWith("/setTopRef") && FovAdjustBase.inDebugMode)
+            {
                 string[] args = command.Split(' ');
                 PlayerControllerBPatches.visorScaleTopRefFOV = float.Parse(args[1]);
             }
-            else if (command.StartsWith("/gimmeMyValues") && FovAdjustBase.inDebugMode) {
+            else if (command.StartsWith("/gimmeMyValues") && FovAdjustBase.inDebugMode)
+            {
                 FovAdjustBase.log.LogMessage("visorScaleBottom: " + PlayerControllerBPatches.visorScaleBottom);
                 FovAdjustBase.log.LogMessage("visorScaleTop: " + PlayerControllerBPatches.visorScaleTop);
                 FovAdjustBase.log.LogMessage("linToSinLerp: " + PlayerControllerBPatches.linToSinLerp);
