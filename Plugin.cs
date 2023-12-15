@@ -73,6 +73,8 @@ namespace FovAdjust {
 		public static float linToSinLerp = 0.6f;
 		public static float visorScaleTopRefFOV = 130f;
 
+		static readonly Vector3 defaultVisorScale = new Vector3(0.36f, 0.49f, 0.49f);
+
 		public static bool changeFovInTerminal = true;
 
 		public static bool snapFovChange = false;
@@ -183,7 +185,7 @@ namespace FovAdjust {
 					visorLerpAmount = Mathf.Lerp(visorLerpAmount, easeOutSine(visorLerpAmount), linToSinLerp);
 					visorScale = Vector3.LerpUnclamped(visorScaleBottom, visorScaleTop, visorLerpAmount);
 				}
-				else { visorScale = new Vector3(0.36f, 0.49f, 0.49f); }
+				else { visorScale = defaultVisorScale; }
 			}
 		}
 
